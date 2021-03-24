@@ -1,0 +1,1 @@
+/work/opa/ag22216/MFS_INDATA_EAS6_V2/LOBC/y2020/mfs_bdyU_u2d_y2020m01d01.nc

@@ -1,0 +1,5 @@
+# Link the version of the F90 code in predict_tide.f90
+#
+# module load intel19.5/19.5.281 impi19.5/19.5.281 impi19.5/netcdf/C_4.7.2-F_4.5.2_CXX_4.3.1
+#
+# ifort -o predict_tide -O2 predict_tide.f90 subs.f90 ${FFLAGS} ${LDFLAGS}
