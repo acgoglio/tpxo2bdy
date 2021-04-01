@@ -45,10 +45,17 @@
       logical APRI,geo,interp_micon,ll_km
       integer ncon,nc,n,m,ndat,k,ierr,ierr1,ic,n0,m0
       integer ncl,nl,ml,ibl,nca,l
-      integer*4 status,ncid(ncmx),ncidl(ncmx)
+      integer*4 status,ncid(ncmx),ncidl(ncmx),ncid_new(ncmx)
       integer narg,dimid,len_coo,len_xb,len_yb,varid,coo_idx,row,col
-      real, allocatable:: nav_lon(:,:), nav_lat(:,:)
+      real, allocatable:: nav_lon(:,:),nav_lat(:,:),z1_re(:,:),z1_imm(:,:)
+      real, allocatable:: tides_reout(:,:,:),tides_immout(:,:,:)
       integer, allocatable:: coo_array(:),x_idx(:),y_idx(:)
+      integer varid_field1,varid_field2
+      character*2 newfield_re,newfield_imm
+      character*1 lower
+      integer ul_diff
+      character*2 upper_ic
+      character*80 outname_ic
 !
       ll_km=.false.
 !
@@ -76,23 +83,7 @@
 !
       ibl=0
       lname='DATA/load_file.nc'
-      write(6,*)'PROVA1 all:',modname
-      write(6,*)'PROVA1 all:',zuv
-      write(6,*)'PROVA1 all:',c_id
-      write(6,*)'PROVA1 all:',ncon
-      write(6,*)'PROVA1 all:',APRI
-      write(6,*)'PROVA1 all:',geo
-      write(6,*)'PROVA1 all:',outname
-      write(6,*)'PROVA1 all:',interp_micon
       call rd_inp(modname,c_id,ncon,APRI,geo,interp_micon)
-      write(6,*)'PROVA1 all:',modname
-      write(6,*)'PROVA1 all:',zuv
-      write(6,*)'PROVA1 all:',c_id
-      write(6,*)'PROVA1 all:',ncon
-      write(6,*)'PROVA1 all:',APRI
-      write(6,*)'PROVA1 all:',geo
-      write(6,*)'PROVA1 all:',outname
-      write(6,*)'PROVA1 all:',interp_micon
       call rd_mod_file(modname,hname,uname,gname,xy_ll_sub,nca,c_id_mod)
       write(*,*)
       write(*,*)'Lat/Lon file:',trim(coo_file)
@@ -102,10 +93,11 @@
       else
          write(*,*)'Extract OCEAN tide HC'
       endif
+!     Open outfile
+      open(unit=11,file=outname,status='unknown')
 !
 !
       write(*,*)
-      write(6,*)'PROVA3 zuv: ',zuv
       call rd_mod_header_nc(modname,zuv,n,m,th_lim,ph_lim,nc,c_id_mod,&
                             xy_ll_sub)
       write(*,*)'Lat/Lon file:',trim(coo_file)
@@ -193,17 +185,18 @@
       allocate(cind(ncon))
       call def_con_ind(c_id,ncon,c_id_mod,nc,cind)
 !     Read lat/lon i coo_file
-      write(6,*)'Open and read coo_file: ',coo_file,' zuv: ',zuv
+      write(6,*)'Open and read coo_file: ',coo_file
       status=nf_open(trim(coo_file),nf_nowrite,ncid)
       if(status.eq.0)then
        ! Read longitude len
-       status=nf_inq_dimid(ncid,'xbT',dimid)
        if(zuv.eq.'z')then
-          write(6,*)'Reading xbT dimension in the inpu file.. '
+          write(6,*)'Reading xbT dimension in the input file.. '
           status=nf_inq_dimid(ncid,'xbT',dimid)
        else if(zuv.eq.'u')then
+          write(6,*)'Reading xbU dimension in the input file.. '
           status=nf_inq_dimid(ncid,'xbU',dimid)
        else if(zuv.eq.'v')then
+          write(6,*)'Reading xbV dimension in the input file.. '
           status=nf_inq_dimid(ncid,'xbV',dimid)
        end if
        status=nf_inq_dimlen(ncid,dimid,len_coo)
@@ -228,7 +221,7 @@
       write(6,*)'Grid points number: ',len_xb,' x ',len_yb,' = ',ndat
       ! Read coo values from bdy NEMO files
       allocate(lat(ndat),lon(ndat),nav_lon(len_xb,len_yb),&
-              nav_lat(len_xb,len_yb),lon0(ndat),coo_array(ndat),&
+              nav_lat(len_xb,len_yb),lon0(len_xb),coo_array(ndat),&
               x_idx(len_xb),y_idx(len_yb))
               !mask(ndat),tmask(len_xb,len_yb,len_lev,1))
       status=nf_inq_varid(ncid,'nav_lon',varid)
@@ -270,6 +263,8 @@
       enddo
       write(6,*)'..End interpolation'
       allocate(z1(ncon))
+      allocate(z1_re(ncon,k))
+      allocate(z1_imm(ncon,k))
 !
       if(zuv.eq.'z'.and.geo)then ! NOT our case..
        write(*,'(a,$)')'Reading load correction header...'
@@ -367,22 +362,73 @@
          endif  
         endif
         if(ierr.eq.0)then
-         if(APRI)then
+         if(APRI)then ! NOT our case
           phase=atan2(-imag(z1),real(z1))*180/3.141593
           write(11,fmt)lat(k),lon0(k), &
                 (abs(z1(ic)),phase(ic),ic=1,ncon)
          else
+           do ic=1,ncon
+              z1_re(ic,k)=real(z1(ic))
+              z1_imm(ic,k)=imag(z1(ic))
+           end do
            write(11,fmt)lat(k),lon0(k), &
                     (real(z1(ic)),imag(z1(ic)),ic=1,ncon)
          endif
         else
-          write(11,'(1x,f8.3,x,f8.3,a70)')lat(k),lon(k), &
-       '************* Site is out of model grid OR land ***************'
+          ! If on the land values must be 0.000
+           z1=0.000
+           do ic=1,ncon
+              z1_re(ic,k)=real(z1(ic))
+              z1_imm(ic,k)=imag(z1(ic))
+           end do
+          write(11,fmt)lat(k),lon0(k), &
+                    (real(z1(ic)),imag(z1(ic)),ic=1,ncon)
+          !write(11,'(1x,f8.3,x,f8.3,a70)')lat(k),lon0(k), &
+       !'************* Site is out of model grid OR land ***************'
         endif
         latp=lat(k)
         lonp=lon(k)
        endif  
       enddo
+      ! Conversion from coo to nav_lat nav_lon
+      write(*,*)'2D Conversion..'
+      allocate(tides_reout(len_xb,len_yb,ncon))
+      allocate(tides_immout(len_xb,len_yb,ncon))
+      do ic=1,ncon
+       coo_idx = 1
+       do col = 1, len_yb
+        do row = 1, len_xb
+         tides_reout(row,col,ic)=z1_re(ic,coo_idx)
+         tides_immout(row,col,ic)=z1_imm(ic,coo_idx)
+         coo_idx=coo_idx+1
+        enddo
+       enddo
+      enddo
+!      ! OUT NC FILE
+!      do ic=1,ncon
+!         !lower = ichar(trim(c_id(ic)(1:1)))
+!         !ul_diff=ichar('A')-ichar('a') 
+!         !upper_ic=char(lower+ul_diff)//trim(c_id(ic)(2:2))
+!         !write(6,*)'Prova: ',lower,ul_diff,upper_ic
+!         ! Open the outfiles and add the fields
+!         outname_ic=outname ! Da costruire il nome dell'outfile+cambia arg + funzione per convertire in upper le tidal comp
+!         write(6,*)'Open outfile: ',outname_ic
+!         ! Open  outfile in writing mode
+!         status=nf_open(trim(outname_ic),nf_netcdf4,ncid_new)
+!         status=nf_redef(ncid_new)
+!         ! Define new fields
+!         newfield_re=trim(zuv)//'1'
+!         status = nf_def_var(ncid_new, newfield_re, nf_float,2,[len_xb,len_yb], varid_field1)
+!         newfield_imm=trim(zuv)//'2'
+!         status = nf_def_var(ncid_new, newfield_imm, nf_float,2,[len_xb,len_yb], varid_field2)
+!         ! Write values in the new fields
+!         status=nf_put_vara(ncid_new,varid_field1,[1,1],[len_xb,len_yb],tides_reout(:,:,ic))
+!         status=nf_put_vara(ncid_new,varid_field2,[1,1],[len_xb,len_yb],tides_immout(:,:,ic))
+!         ! Close the outfile
+!         status = nf_close(ncid_new)
+!      end do
+
+
       deallocate(z1,cind,lat,lon,lon0)
       if(zuv.eq.'u'.or.zuv.eq.'v')deallocate(dtmp,mz)
       if(trim(xy_ll_sub).ne.'')deallocate(x,y)

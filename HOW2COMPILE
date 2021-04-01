@@ -2,4 +2,5 @@
 #
 # module load intel19.5/19.5.281 impi19.5/19.5.281 impi19.5/netcdf/C_4.7.2-F_4.5.2_CXX_4.3.1
 #
-# ifort -o predict_tide -O2 predict_tide.f90 subs.f90 ${FFLAGS} ${LDFLAGS}
+# ifort -o extract_HC -O2 extract_HC.f90 subs.f90 ${FFLAGS} ${LDFLAGS}
+#

@@ -39,7 +39,6 @@
       integer*4 itmp
       complex rc
 !
-      write(6,*)'PROVA s1 zuv: ',zuv
       start(1)=j0;start(2)=i0;start(3)=ic;
       count=stride ! reads just one value
       if(ic.gt.ncmod)ic=ncmod
@@ -90,7 +89,6 @@
       stop
 2     write(*,*)'Error reading ',trim(varname(k))
       stop
-      write(6,*)'PROVA s2 zuv: ',zuv
       end
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 ! define constituent indices in a model for given set of constituent
