@@ -9,14 +9,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import netCDF4 as NC
 import shutil
-from scipy.optimize import curve_fit
+#from scipy.optimize import curve_fit
 from scipy import stats
 import collections
 import pandas as pd
 import csv
 import math
 from datetime import datetime
-from operator import itemgetter 
+#from operator import itemgetter 
 #
 # by AC Goglio (CMCC)
 # annachiara.goglio@cmcc.it
@@ -28,9 +28,9 @@ from operator import itemgetter
 # It adds Re and Imm fields to the arranged file templates
 #
 #################################################################
-fields=['z','u','v']
-grids=['T','U','V']
-udm=['cm','cm/s','cm/s']
+fields=['v','u','z']
+grids=['V','U','T']
+udm=['cm/s','cm/s','cm']
 tidal_comp=['M2','S2','N2','K2','K1','O1','P1','Q1']
 
 # Loop on grids <-> input tabs
@@ -65,8 +65,8 @@ for idx_grid,grid in enumerate(grids):
        b_lon='nav_lon'
        lat_idx='yb'
        lon_idx='xb'+grid
-       lons = outnc.variables[b_lon][:]
-       lats = outnc.variables[b_lat][:]
+       lons = outnc.variables[b_lon][:,:]
+       lats = outnc.variables[b_lat][:,:]
        print ('The dimension names in the out file are: ',lat_idx,lon_idx)
        print ('The coordinate names in the out file are: ',b_lat,b_lon)
 
@@ -80,24 +80,28 @@ for idx_grid,grid in enumerate(grids):
        globals()[field+'2']=outnc.createVariable(field+'2',np.float64,(lat_idx,lon_idx))
        globals()[field+'2'].units = units
        globals()[field+'2'].standard_name = t_comp+' '+field+' Immaginary part'
-
+   
        # Loop on bdy points:
-       print ('I am going to write the field along the bdy: len(lons): ',len(lons),' len(lats): ',len(lats))
+       print ('I am going to write the field along the bdy: len(lons): ',len(lons[0,:]),' len(lats): ',len(lats))
        idx_bdy_coo=0
-       for idx_lon in range (0,len(lons)):
-           for idx_lat in range (0,len(lats)):
-               print ('Indexes: ', idx_lon, idx_lat)
+   
+       try:
+          for idx_lon in range (0,len(lons[0,:])):
+              for idx_lat in range (0,len(lats)):
+                  print ('Indexes: ', idx_lon, idx_lat )
+    
+                  # Write values in the arrays
+                  globals()[field+'1'][idx_lat,idx_lon]=intab[t_comp+'_'+'RE'][idx_bdy_coo]
+                  globals()[field+'2'][idx_lat,idx_lon]=intab[t_comp+'_'+'IM'][idx_bdy_coo]
+   
+                  idx_bdy_coo=idx_bdy_coo+1
+   
+   
+          outnc.close()
 
-           # Write values in the arrays
-           tab_col_name=t_comp+'_'+'RE'
-           globals()[field+'1'][idx_lat,idx_lon]=intab.tab_col_name[idx_bdy_coo] 
-           tab_col_name=t_comp+'_'+'IM'
-           globals()[field+'2'][idx_lat,idx_lon]=intab.tab_col_name[idx_bdy_coo]
-
-           idx_bdy_coo=idx_bdy_coo+1
-
-
-       outnc.close()
+       except:
+          print ('ERROR..')
+          outnc.close()
 
 
 #################################################################

@@ -70,10 +70,11 @@ for ID_FIELDGRID in 0 1 2; do
    # Define and write the new tab header
    LINE_STR_1=$( head -n 3 tmp_$ARG_OUTFILE_TAB | tail -n 1 )
    LINE_STR_2=$( head -n 4 tmp_$ARG_OUTFILE_TAB | tail -n 1 )
-   NEW_HEADER=$( echo "${LINE_STR_1^^}${LINE_STR_2^^}" ) | sed -e "s/ /;/g" | sed -e "s/;;;/;/g" | sed -e "s/;;/;/g" > $ARG_OUTFILE_TAB
+   NEW_HEADER=$( echo "${LINE_STR_1^^}${LINE_STR_2^^}" | sed -e "s/ /;/g" | sed -e "s/;;;/;/g" | sed -e "s/;;/;/g" | sed -e "s/;;/;/g" | sed -e "s/;_/_/g" ) 
+   echo $NEW_HEADER > $ARG_OUTFILE_TAB
 
    # Cut the old header from the out tab
-   tail -n +5 tmp_$ARG_OUTFILE_TAB | sed -e "s/ /;/g" | sed -e "s/;;;/;/g" | sed -e "s/;;/;/g" >> $ARG_OUTFILE_TAB
+   tail -n +5 tmp_$ARG_OUTFILE_TAB | sed -e "s/ /;/g" | sed -e "s/;;;/;/g" | sed -e "s/;;/;/g" | sed -e "s/;;/;/g" >> $ARG_OUTFILE_TAB
    echo "....Done!!"
 
    # Read the field into the tab and write it into the nc file
