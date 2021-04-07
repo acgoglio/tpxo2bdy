@@ -1,3 +1,11 @@
+# tpxo2bdy repository
+#
+# by
+# AC Goglio - CMCC
+# annachiara.goglio@cmcc.it
+#
+# The aim of this code is to build tidal boundary files for EAS system
+#
 # HOW TO COMPILE THE CODE AND RUN IT 
 #
 # 1) Load the comp environment (ONLY the first time you run the code)
