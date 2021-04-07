@@ -165,15 +165,15 @@
 !
       if(zuv.eq.'z')write(*,*)'Output elevations (m)'
       if(zuv.eq.'U')write(*,*)'Output WE transport (m^2/s)'
-      if(zuv.eq.'u')write(*,*)'Output WE velocity  (cm/s)'
+      if(zuv.eq.'u')write(*,*)'Output WE velocity  (m/s)'
       if(zuv.eq.'V')write(*,*)'Output SN transport (m^2/s)'
-      if(zuv.eq.'v')write(*,*)'Output SN velocity  (cm/s)'
+      if(zuv.eq.'v')write(*,*)'Output SN velocity  (m/s)'
 !
       if(zuv.eq.'z')write(11,*)'Elevations (m)'
       if(zuv.eq.'U')write(11,*)'WE transport (m^2/s)'
-      if(zuv.eq.'u')write(11,*)'WE velocity  (cm/s)'
+      if(zuv.eq.'u')write(11,*)'WE velocity  (m/s)'
       if(zuv.eq.'V')write(11,*)'SN transport (m^2/s)'
-      if(zuv.eq.'v')write(11,*)'SN velocity  (cm/s)'
+      if(zuv.eq.'v')write(11,*)'SN velocity  (m/s)'
 !
       if(ncon.eq.0)then
        ibl=1
@@ -354,7 +354,8 @@
            call interp(dtmp,1,n,m,mz,th_lim,ph_lim, &
                        y(k),x(k),d1,ierr1,'z')
           endif
-          z1=z1/real(d1)*100. ! currents cm/s
+          !z1=z1/real(d1)*100. ! currents cm/s
+          z1=z1/real(d1)*1. ! currents m/s
          elseif(zuv.eq.'z'.and.geo)then       
            call interp_da_nc(ncidl,nl,ml,lth_lim,lph_lim, &
                     lat(k),lon(k),zl1,ncon,lcind,ierr1,'z',0)

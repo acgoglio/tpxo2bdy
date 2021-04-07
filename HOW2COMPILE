@@ -1,6 +1,18 @@
-# Link the version of the F90 code in predict_tide.f90
+# HOW TO COMPILE THE CODE AND RUN IT 
 #
+# 1) Load the comp environment (ONLY the first time you run the code)
 # module load intel19.5/19.5.281 impi19.5/19.5.281 impi19.5/netcdf/C_4.7.2-F_4.5.2_CXX_4.3.1
+# 
+# 2) Compile the code (ONLY the first time you run the code)
+# ifort -o extract_tidalbdy_txt -O2 extract_HC_txt.f90 subs.f90 ${FFLAGS} ${LDFLAGS}
 #
-# ifort -o extract_HC -O2 extract_HC.f90 subs.f90 ${FFLAGS} ${LDFLAGS}
+# 3) Load the py env
+# module load anaconda
+# source activate %your-virtual-env%
 #
+# 4) run the whole procedure
+# sh run_bdy_txt.sh 
+#
+# 5) To check the outputs (and compare them to another tidal bdy dataset) 
+#    set (following comments in the code) and run the script
+#    tpxoVsfes.py

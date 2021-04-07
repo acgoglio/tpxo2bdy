@@ -30,7 +30,7 @@ from datetime import datetime
 #################################################################
 fields=['v','u','z']
 grids=['V','U','T']
-udm=['cm/s','cm/s','cm']
+udm=['m/s','m/s','m']
 tidal_comp=['M2','S2','N2','K2','K1','O1','P1','Q1']
 
 # Loop on grids <-> input tabs
