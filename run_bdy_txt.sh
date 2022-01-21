@@ -106,7 +106,7 @@ module load anaconda/3.7 curl/7.70.0 cmake/3.17.3 gams/28.2.0 gcc_9.1.0/9.1.0 gc
 
 for TOBEMOD in $( ls ${OUTBDY_TEMPLATE_PRE}*.nc ); do
     mv $TOBEMOD ${TOBEMOD}_tmp
-    ncatted -O -h -a title,global,m,c,"tidal bdy data from TPXO model" ${TOBEMOD}_tmp
+    ncatted -O -h -a title,global,m,c,"tidal bdy data from TPXO9-atlas model" ${TOBEMOD}_tmp
     ncatted -O -h -a author,global,m,c,"Anna Chiara Goglio - CMCC" ${TOBEMOD}_tmp
     cdo delete,name=sossheig,vobtcrtx,vobtcrty ${TOBEMOD}_tmp $TOBEMOD
     rm ${TOBEMOD}_tmp
